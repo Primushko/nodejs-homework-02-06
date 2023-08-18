@@ -31,36 +31,24 @@ const updateStatusContact = async ({ id, body, owner }) => {
 };
 // Домашнє завдання №4  -validateEmail-createUser-updateUserToken-findByIdUser-updateSubscription
 
-const validateEmail = async (email) => {
-  const user = await Users.findOne({ email });
+const validateEmail = (email) => {
+  const user = Users.findOne({ email });
   return user;
 };
-
 const createUser = async ({ email, password }) => {
   const result = await Users.create({ email, password });
   return result;
 };
-
-const updateUserToken = async ({ id, token }) => {
-  const result = await Users.findByIdAndUpdate(
-    id,
-    { token: token },
-    { new: true }
-  );
+const updateUserToken = ({ id, token }) => {
+  const result = Users.findByIdAndUpdate(id, { token: token }, { new: true });
   return result;
 };
-
-const findByIdUser = async ({ id }) => {
-  const result = await Users.findById(id);
+const findByIdUser = ({ id }) => {
+  const result = Users.findById(id);
   return result;
 };
-
-const updateSubscription = async ({ id, subscription }) => {
-  const result = await Users.findByIdAndUpdate(
-    id,
-    { subscription },
-    { new: true }
-  );
+const updateSubscription = ({ id, subscription }) => {
+  const result = Users.findByIdAndUpdate(id, { subscription }, { new: true });
   return result;
 };
 

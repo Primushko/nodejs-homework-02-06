@@ -1,7 +1,11 @@
 const service = require("../servise");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+//
+const path = require("path");
+const convertingAvatars = require("../servise/convertingAvatars");
+const fs = require("fs").promises;
+//
 require("dotenv").config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -148,6 +152,7 @@ const login = async (req, res) => {
       user: {
         email: result.email,
         subscription: result.subscription,
+        avatarURL: result.avatarURL,
       },
     });
   } catch (error) {
@@ -182,9 +187,30 @@ const subscription = async (req, res) => {
       _id,
       email,
       subscription: newSub,
+      avatarURL,
     } = await service.updateSubscription({ id, subscription });
-    res.status(200).json({ _id, email, subscription: newSub });
+    res.status(200).json({ _id, email, subscription: newSub, avatarURL });
   } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+//AVATARS
+const avatars = async (req, res) => {
+  const { path: tmpDir, originalname } = req.file;
+  const { id } = req.user;
+  const extension = originalname.split(".").reverse()[0];
+  const newName = `${id}.${extension}`;
+  const newPathAvatar = path.join(__dirname, "../public/avatars/", newName);
+  try {
+    await convertingAvatars({ tmpDir });
+    await fs.rename(tmpDir, newPathAvatar);
+    const { avatarURL } = await service.updateAvatar({
+      id,
+      avatarURL: `/avatars/${newName}`,
+    });
+    res.status(200).json({ avatarURL });
+  } catch (error) {
+    fs.unlink(tmpDir);
     res.status(400).json({ message: error.message });
   }
 };
@@ -201,4 +227,5 @@ module.exports = {
   logout,
   current,
   subscription,
+  avatars,
 };

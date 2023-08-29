@@ -4,7 +4,11 @@ const jwt = require("jsonwebtoken");
 //
 const path = require("path");
 const convertingAvatars = require("../servise/convertingAvatars");
+const sendEmailVerificationToken = require("../servise/sendGridEmail");
+
 const fs = require("fs").promises;
+
+const { v4: uuidv4 } = require("uuid");
 //
 require("dotenv").config();
 
@@ -117,7 +121,15 @@ const signup = async (req, res) => {
       return;
     }
     const hashPassword = await bcrypt.hash(password, 10);
-    const result = await service.createUser({ email, password: hashPassword });
+
+    const verificationToken = uuidv4();
+
+    const result = await service.createUser({
+      email,
+      password: hashPassword,
+      verificationToken,
+    });
+    sendEmailVerificationToken({ email, verificationToken });
     res.status(201).json({
       user: {
         email: result.email,
@@ -137,6 +149,13 @@ const login = async (req, res) => {
       res
         .status(401)
         .json({ message: `User not found with this email ${email}` });
+      return;
+    }
+    if (!user.verify) {
+      res.status(404).json({
+        message:
+          "Your email is not verified, please verify your email and continue",
+      });
       return;
     }
     const checkPassword = await bcrypt.compare(password, user.password);
@@ -214,7 +233,42 @@ const avatars = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
+//  VERIFY
+const verify = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await service.findVerificationToken({ verificationToken });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    await service.findUserIDandUpdateVerify({ id: user.id });
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+const sendVerifyCodeAgain = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await service.validateEmail(email);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    if (user.verify) {
+      res.status(400).json({ message: "Verification has already been passed" });
+      return;
+    }
+    sendEmailVerificationToken({
+      email,
+      verificationToken: user.verificationToken,
+    });
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 module.exports = {
   get,
   getById,
@@ -228,4 +282,6 @@ module.exports = {
   current,
   subscription,
   avatars,
+  verify,
+  sendVerifyCodeAgain,
 };

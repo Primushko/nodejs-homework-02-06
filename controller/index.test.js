@@ -3,10 +3,10 @@ const request = require("supertest");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
-const app = require("../app");
-const Users = require("../servise/schemas/users");
-const { DB_HOST, PORT } = process.env;
 const path = require("path");
+const Users = require("../servise/schemas/users");
+const app = require("../app");
+const { DB_HOST, PORT } = process.env;
 
 describe("test auth route", () => {
   let server;
@@ -26,7 +26,6 @@ describe("test auth route", () => {
       .send({ email, password });
 
     const { token, user } = response.body;
-
     expect(response.statusCode).toBe(200);
     expect(token).not.toBe("");
     expect(Object.keys(user)).toEqual(["email", "subscription", "avatarURL"]);

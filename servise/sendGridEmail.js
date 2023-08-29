@@ -9,10 +9,10 @@ sgMail.setApiKey(API_KEY);
 const htmlTemplate = ({ verificationToken }) => {
   return `<div> 
         <p style="padding:18px 0px 18px 0px; line-height:22px; text-align:center;">
-        To use your account, verify your email. <b>Click the button under this text.</b>
+        Щоб скористатися своїм акаунтом, підтвердіть свою електронну пошту. <b>Натисніть на кнопку під цим текстом.</b>
         </p>
         <a href="http://localhost:${PORT}/users/verify/${verificationToken}" style="font-size:16px; background-color:#c9adf0;  border-radius:5px; color:#ffffff; display:block; letter-spacing:1px; line-height:normal; padding:15px 22px 15px 22px; text-align:center; max-width:300px; margin:0 auto; text-decoration:none; font-family:georgia,serif;">
-        Verify Your Account
+        Підтвердіть свій обліковий запис
         </a>
         </div>`;
 };

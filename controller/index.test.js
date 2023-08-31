@@ -18,7 +18,7 @@ describe("test auth route", () => {
 
   test("test signup", async () => {
     const password = "1111111";
-    const email = "test1112@gmail.com";
+    const email = "test1122@gmail.com";
     const hash = await bcrypt.hash(password, 10);
     await Users.create({ email, password: hash });
     const response = await request(app)
